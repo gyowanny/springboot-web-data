@@ -1,23 +1,45 @@
 package com.example.springbootwebdata.controller;
 
+import com.example.springbootwebdata.model.HealthMetric;
+import com.example.springbootwebdata.repository.HealthMetricsRepository;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @RestController
 @RequestMapping("/healthmetrics")
 public class HealthMetricsCRUDController {
 
+    private final HealthMetricsRepository healthMetricsRepository;
+
+    @Autowired
+    public HealthMetricsCRUDController(HealthMetricsRepository healthMetricsRepository) {
+        this.healthMetricsRepository = healthMetricsRepository;
+    }
+
     @RequestMapping(method = POST)
-    public ResponseEntity<?> postMetric(@RequestBody MetricPayload payload) {
+    public ResponseEntity<?> createMetric(@RequestBody MetricPayload payload) {
+        healthMetricsRepository.save(payload.toHealthMetric());
+        return ResponseEntity.ok().build();
+    }
+
+    @RequestMapping(path="/{id}", method = PUT)
+    public ResponseEntity<?> updateMetric(@PathVariable("id") Long id, @RequestBody MetricPayload payload) {
+        if (!healthMetricsRepository.exists(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        HealthMetric metric = payload.toHealthMetric();
+        metric.setId(id);
+        healthMetricsRepository.save(metric);
+
         return ResponseEntity.ok().build();
     }
 
@@ -35,6 +57,15 @@ public class HealthMetricsCRUDController {
             this.name = name;
             this.value = value;
             this.timestamp = timestamp;
+        }
+
+        HealthMetric toHealthMetric() {
+            HealthMetric metric = new HealthMetric();
+            metric.setName(name);
+            metric.setValue(value);
+            metric.setTimestamp(timestamp);
+
+            return metric;
         }
     }
 }
