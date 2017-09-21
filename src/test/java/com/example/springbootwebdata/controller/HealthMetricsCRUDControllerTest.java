@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -47,7 +49,7 @@ public class HealthMetricsCRUDControllerTest {
         initMocks(this);
         instance = new HealthMetricsCRUDController(healthMetricsRepository);
         //MockMvc must be initialized manually when you inject mock dependencies otherwise
-        //annotate the test class with @AutoConfigureMockMvc and @Autowired for mockMvc field class
+        //annotate the test class with @AutoConfigureMockMvc and the mockMvc field class with @Autowired
         mockMvc = MockMvcBuilders
                 .standaloneSetup(instance)
                 .build();
@@ -72,30 +74,59 @@ public class HealthMetricsCRUDControllerTest {
         HealthMetric metric = objectMapper.readValue(PAYLOAD, HealthMetric.class);
         metric.setId(1l);
         when(healthMetricsRepository.save(any(HealthMetric.class))).thenReturn(metric);
+        when(healthMetricsRepository.exists(1l)).thenReturn(true);
 
         mockMvc.perform(
-                put("/healthmetrics/1")
+                put("/healthmetrics/{id}","1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(PAYLOAD))
                 .andExpect(status().is2xxSuccessful());
 
+        verify(healthMetricsRepository).exists(eq(1l));
         verify(healthMetricsRepository).save(eq(metric));
     }
 
     @Test
-    public void putRequestShouldReturn404WhenMetricIdDoesNotExist() throws Exception {
+    public void putRequestShouldReturn400WhenMetricIdDoesNotExist() throws Exception {
         HealthMetric metric = objectMapper.readValue(PAYLOAD, HealthMetric.class);
         metric.setId(1l);
         when(healthMetricsRepository.save(any(HealthMetric.class))).thenReturn(metric);
         when(healthMetricsRepository.exists(1l)).thenReturn(false);
 
         mockMvc.perform(
-                put("/healthmetrics/1")
+                put("/healthmetrics/{id}","1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(PAYLOAD))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isBadRequest());
 
         verify(healthMetricsRepository).exists(eq(1l));
         verify(healthMetricsRepository, times(0)).save(eq(metric));
+    }
+
+    @Test
+    public void getRequestShouldReturnAnExistingHealthMetric() throws Exception {
+        HealthMetric metric = objectMapper.readValue(PAYLOAD, HealthMetric.class);
+        metric.setId(1l);
+        when(healthMetricsRepository.findOne(1l)).thenReturn(metric);
+
+        mockMvc.perform(
+                get("/healthmetrics/{id}","1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().json(objectMapper.writeValueAsString(metric)));
+
+        verify(healthMetricsRepository).findOne(eq(1l));
+    }
+
+    @Test
+    public void getRequestShouldReturnNotFoundForInvalidId() throws Exception {
+        when(healthMetricsRepository.findOne(1l)).thenReturn(null);
+
+        mockMvc.perform(
+                get("/healthmetrics/{id}","1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(healthMetricsRepository).findOne(eq(1l));
     }
 }
