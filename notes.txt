@@ -1,1 +1,3 @@
 - Jenkins with DSL jobs plugin Docker image: https://github.com/thomasleveil/docker-jenkins-dsl-ready
+
+- Swagger

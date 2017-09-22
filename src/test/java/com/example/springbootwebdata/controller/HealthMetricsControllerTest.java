@@ -14,11 +14,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.Instant;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
+import static java.time.ZoneId.systemDefault;
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -142,15 +143,17 @@ public class HealthMetricsControllerTest {
                 createHealthMetric(2l, metricName, "1", Date.from(Instant.now().plus(1, ChronoUnit.HOURS))),
                 createHealthMetric(3l, metricName, "1", Date.from(Instant.now().plus(2, ChronoUnit.HOURS)))
         );
-        Date from = Date.from(Instant.now());
-        Date to = Date.from(Instant.now().plus(3, ChronoUnit.HOURS));
+        final LocalDateTime from = LocalDateTime.of(2017, Month.APRIL, 1, 1, 0, 0, 0);
+        final LocalDateTime to = LocalDateTime.of(2017, Month.APRIL, 1, 3, 0, 0, 0);
         when(healthMetricsRepository.findByNameAndTimestampBetween(any(), any(), any())).thenReturn(metricsList);
 
-        mockMvc.perform(get("/healthmetrics/{name}/{from}/{to}", metricName, dateFormat.format(from), dateFormat.format(to)))
+        String fromStr = dateFormat.format(Date.from(from.toInstant(ZoneOffset.UTC)));
+        String toStr = dateFormat.format(Date.from(to.toInstant(ZoneOffset.UTC)));
+        mockMvc.perform(get("/healthmetrics/{name}/{from}/{to}", metricName, fromStr, toStr))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(metricsList)));
 
-        verify(healthMetricsRepository).findByNameAndTimestampBetween(eq(metricName), any(), any());
+        verify(healthMetricsRepository).findByNameAndTimestampBetween(eq(metricName), eq(from), eq(to));
     }
 
     private HealthMetric createHealthMetric(Long id, String name, String value, Date timestamp) {
