@@ -1,7 +1,6 @@
 package com.example.springbootwebdata.model;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -10,9 +9,9 @@ public class HealthMetric {
     @Id
     @GeneratedValue
     private Long id;
+    @Column(unique = true)
     private String name;
-    private String value;
-    private Date timestamp;
+    private String description;
 
     public Long getId() {
         return id;
@@ -22,28 +21,20 @@ public class HealthMetric {
         this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getValue() {
-        return value;
+    public String getDescription() {
+        return description;
     }
 
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -53,13 +44,12 @@ public class HealthMetric {
         HealthMetric that = (HealthMetric) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name) &&
-                Objects.equals(value, that.value) &&
-                Objects.equals(timestamp, that.timestamp);
+                Objects.equals(description, that.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, value, timestamp);
+        return Objects.hash(id, name, description);
     }
 
     @Override
@@ -67,8 +57,7 @@ public class HealthMetric {
         return "HealthMetric{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                ", timestamp=" + timestamp +
+                ", description='" + description + '\'' +
                 '}';
     }
 }
