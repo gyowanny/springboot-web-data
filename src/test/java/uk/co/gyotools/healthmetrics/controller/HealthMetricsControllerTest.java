@@ -76,7 +76,8 @@ public class HealthMetricsControllerTest {
         mockMvc.perform(post(URI_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(payload)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("Metric name already exists"));
 
         // Then
         verify(healthMetricsRepository).existsByName(metric.getName());

@@ -25,7 +25,8 @@ public class HealthMetricsController {
     @RequestMapping(method = POST, consumes = "application/json")
     public ResponseEntity<?> createHealthMetric(@RequestBody HealthMetricPayload payload) {
         if (healthMetricsRepository.existsByName(payload.getName())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Metric name already exists");
         }
 
         HealthMetric healthMetric = payload.toHealthMetric();
