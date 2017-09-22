@@ -19,7 +19,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
-import static java.time.ZoneId.systemDefault;
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -139,9 +138,9 @@ public class HealthMetricsControllerTest {
     public void getMetricsByNameAndDateIntervalShouldReturnAListOfMetrics() throws Exception {
         String metricName = "water.cup";
         List<HealthMetric> metricsList = asList(
-                createHealthMetric(1l, metricName, "1", Date.from(Instant.now())),
-                createHealthMetric(2l, metricName, "1", Date.from(Instant.now().plus(1, ChronoUnit.HOURS))),
-                createHealthMetric(3l, metricName, "1", Date.from(Instant.now().plus(2, ChronoUnit.HOURS)))
+                createHealthMetric(1l, metricName, "1", new Date()),
+                createHealthMetric(2l, metricName, "1", new Date()),
+                createHealthMetric(3l, metricName, "1", new Date())
         );
         final LocalDateTime from = LocalDateTime.of(2017, Month.APRIL, 1, 1, 0, 0, 0);
         final LocalDateTime to = LocalDateTime.of(2017, Month.APRIL, 1, 3, 0, 0, 0);

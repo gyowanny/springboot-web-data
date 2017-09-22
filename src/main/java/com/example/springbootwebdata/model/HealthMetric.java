@@ -1,12 +1,11 @@
 package com.example.springbootwebdata.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.Objects;
 
 @Entity
+@Table(name="HEALTH_METRIC")
 public class HealthMetric {
     @Id
     @GeneratedValue
@@ -39,12 +38,12 @@ public class HealthMetric {
         return value;
     }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public Date getTimestamp() {
         return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override
