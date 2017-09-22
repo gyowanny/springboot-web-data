@@ -65,8 +65,8 @@ public class Application {
 
     private ApiInfo metaData() {
         ApiInfo apiInfo = new ApiInfo(
-                "Spring Boot REST API",
-                "Spring Boot REST API Example with Spring data JPA",
+                "HealthMetrics API",
+                "Spring Boot REST API with Spring Data JPA",
                 "1.0",
                 "Terms of service",
                 new Contact("Gyowanny Queiroz", "http://www.gyowanny.co.uk", "gyowanny@gmail.com"),
