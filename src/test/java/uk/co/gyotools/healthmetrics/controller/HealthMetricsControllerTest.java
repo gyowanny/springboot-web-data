@@ -1,8 +1,8 @@
-package com.example.springbootwebdata.controller;
+package uk.co.gyotools.healthmetrics.controller;
 
-import com.example.springbootwebdata.model.HealthMetric;
-import com.example.springbootwebdata.model.payload.HealthMetricPayload;
-import com.example.springbootwebdata.repository.HealthMetricsRepository;
+import uk.co.gyotools.healthmetrics.model.HealthMetric;
+import uk.co.gyotools.healthmetrics.model.payload.HealthMetricPayload;
+import uk.co.gyotools.healthmetrics.repository.HealthMetricsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,6 +63,24 @@ public class HealthMetricsControllerTest {
 
         // Then
         verify(healthMetricsRepository).save(eq(metric));
+    }
+
+    @Test
+    public void postRequestShouldReturn403WhenANameAlreadyInDBIsProvided() throws Exception {
+        // Given
+        HealthMetricPayload payload = new HealthMetricPayload("metricName", "description");
+        HealthMetric metric = payload.toHealthMetric();
+        when(healthMetricsRepository.existsByName(eq(metric.getName()))).thenReturn(true);
+
+        // When
+        mockMvc.perform(post(URI_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isForbidden());
+
+        // Then
+        verify(healthMetricsRepository).existsByName(metric.getName());
+        verify(healthMetricsRepository, times(0)).save(eq(metric));
     }
 
     @Test

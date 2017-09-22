@@ -1,6 +1,6 @@
-package com.example.springbootwebdata.model.payload;
+package uk.co.gyotools.healthmetrics.model.payload;
 
-import com.example.springbootwebdata.model.HealthMetricEntry;
+import uk.co.gyotools.healthmetrics.model.HealthMetricEntry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

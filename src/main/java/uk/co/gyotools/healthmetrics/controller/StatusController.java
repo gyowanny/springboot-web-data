@@ -1,4 +1,4 @@
-package com.example.springbootwebdata.controller;
+package uk.co.gyotools.healthmetrics.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

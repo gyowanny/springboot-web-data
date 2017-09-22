@@ -1,10 +1,10 @@
-package com.example.springbootwebdata.controller;
+package uk.co.gyotools.healthmetrics.controller;
 
-import com.example.springbootwebdata.model.HealthMetric;
-import com.example.springbootwebdata.model.HealthMetricEntry;
-import com.example.springbootwebdata.model.payload.HealthMetricEntryPayload;
-import com.example.springbootwebdata.repository.HealthMetricsEntryRepository;
-import com.example.springbootwebdata.repository.HealthMetricsRepository;
+import uk.co.gyotools.healthmetrics.model.HealthMetric;
+import uk.co.gyotools.healthmetrics.model.HealthMetricEntry;
+import uk.co.gyotools.healthmetrics.model.payload.HealthMetricEntryPayload;
+import uk.co.gyotools.healthmetrics.repository.HealthMetricsEntryRepository;
+import uk.co.gyotools.healthmetrics.repository.HealthMetricsRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

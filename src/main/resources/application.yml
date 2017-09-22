@@ -1,14 +1,22 @@
+logging:
+  level:
+    .: error
+    org.springframework: ERROR
+    org.hibernate: ERROR
+
 spring:
   datasource:
-    url: jdbc:h2:mem:TEST;MVCC=true;DB_CLOSE_DELAY=-1;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:HEALTHMETRICS;MVCC=true;DB_CLOSE_DELAY=-1;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
-    platform: h2
-    initialize: true
+#    platform: h2
+#    initialize: true
   h2:
     console:
       enabled: true
   jpa:
-    hibernate: 
+    hibernate:
       ddl-auto: create-drop
+    generate-ddl: true
+    database-platform: H2

@@ -1,4 +1,4 @@
-package com.example.springbootwebdata.model;
+package uk.co.gyotools.healthmetrics.model;
 
 import javax.persistence.*;
 import java.util.Objects;

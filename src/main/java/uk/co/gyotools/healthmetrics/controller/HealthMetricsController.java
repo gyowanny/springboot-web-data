@@ -1,8 +1,8 @@
-package com.example.springbootwebdata.controller;
+package uk.co.gyotools.healthmetrics.controller;
 
-import com.example.springbootwebdata.model.HealthMetric;
-import com.example.springbootwebdata.model.payload.HealthMetricPayload;
-import com.example.springbootwebdata.repository.HealthMetricsRepository;
+import uk.co.gyotools.healthmetrics.model.HealthMetric;
+import uk.co.gyotools.healthmetrics.model.payload.HealthMetricPayload;
+import uk.co.gyotools.healthmetrics.repository.HealthMetricsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static javafx.scene.input.KeyCode.R;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @RestController
@@ -25,6 +24,10 @@ public class HealthMetricsController {
 
     @RequestMapping(method = POST, consumes = "application/json")
     public ResponseEntity<?> createHealthMetric(@RequestBody HealthMetricPayload payload) {
+        if (healthMetricsRepository.existsByName(payload.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         HealthMetric healthMetric = payload.toHealthMetric();
         healthMetricsRepository.save(healthMetric);
 
