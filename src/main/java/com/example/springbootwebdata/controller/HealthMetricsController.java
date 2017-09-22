@@ -5,24 +5,29 @@ import com.example.springbootwebdata.repository.HealthMetricsRepository;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
+import static org.springframework.format.annotation.DateTimeFormat.ISO.*;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @RestController
 @RequestMapping("/healthmetrics")
-public class HealthMetricsCRUDController {
+public class HealthMetricsController {
 
     private final HealthMetricsRepository healthMetricsRepository;
 
     @Autowired
-    public HealthMetricsCRUDController(HealthMetricsRepository healthMetricsRepository) {
+    public HealthMetricsController(HealthMetricsRepository healthMetricsRepository) {
         this.healthMetricsRepository = healthMetricsRepository;
     }
 
@@ -33,7 +38,10 @@ public class HealthMetricsCRUDController {
     }
 
     @RequestMapping(path="/{id}", method = PUT)
-    public ResponseEntity<?> updateMetric(@PathVariable("id") Long id, @RequestBody HealthMetricPayload payload) {
+    public ResponseEntity<?> updateMetric(
+            @PathVariable("id") Long id,
+            @RequestBody HealthMetricPayload payload
+    ) {
         if (!healthMetricsRepository.exists(id)) {
             return ResponseEntity.badRequest().build();
         }
@@ -52,6 +60,23 @@ public class HealthMetricsCRUDController {
             return ResponseEntity.notFound().build();
         }
         return new ResponseEntity<HealthMetric>(healthMetric, HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/{name}/{from}/{to}", method = GET)
+    public ResponseEntity<List<HealthMetric>> getMetrics(
+            @PathVariable("name") String name,
+            @PathVariable("from") @DateTimeFormat(iso= DATE_TIME) LocalDateTime from,
+            @PathVariable("to") @DateTimeFormat(iso= DATE_TIME) LocalDateTime to
+    ) {
+        List<HealthMetric> metricList = healthMetricsRepository
+                .findByNameAndTimestampBetween(name, toDate(from), toDate(to));
+        return new ResponseEntity<List<HealthMetric>>(
+                metricList,
+                HttpStatus.OK);
+    }
+
+    private static Date toDate(@PathVariable("from") @DateTimeFormat(iso = DATE_TIME) LocalDateTime from) {
+        return Date.from(from.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     private static class HealthMetricPayload {
