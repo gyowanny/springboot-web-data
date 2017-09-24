@@ -1,10 +1,10 @@
-package uk.co.gyotools.healthmetrics.controller;
+package uk.co.gyotools.selfmetrics.controller;
 
-import uk.co.gyotools.healthmetrics.model.HealthMetric;
-import uk.co.gyotools.healthmetrics.model.HealthMetricEntry;
-import uk.co.gyotools.healthmetrics.model.payload.HealthMetricEntryPayload;
-import uk.co.gyotools.healthmetrics.repository.HealthMetricsEntryRepository;
-import uk.co.gyotools.healthmetrics.repository.HealthMetricsRepository;
+import uk.co.gyotools.selfmetrics.model.SelfMetric;
+import uk.co.gyotools.selfmetrics.model.SelfMetricEntry;
+import uk.co.gyotools.selfmetrics.model.payload.SelfMetricEntryPayload;
+import uk.co.gyotools.selfmetrics.repository.SelfMetricsEntryRepository;
+import uk.co.gyotools.selfmetrics.repository.SelfMetricsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import org.junit.Before;
@@ -37,51 +37,51 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class HealthMetricsEntryControllerTest {
+public class SelfMetricsEntryControllerTest {
     private static final String URI_PATH = "/healthmetrics/entry";
     private static final String PAYLOAD = "{\"metricId\":\"1\",\"value\":\"1\",\"timestamp\":\"2017-11-01T18:25:43.511Z\"}";
 
     private final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
 
     @Mock
-    private HealthMetricsEntryRepository healthMetricsEntryRepository;
+    private SelfMetricsEntryRepository healthMetricsEntryRepository;
     @Mock
-    private HealthMetricsRepository healthMetricsRepository;
+    private SelfMetricsRepository healthMetricsRepository;
 
-    private HealthMetricsEntryController instance;
+    private SelfMetricsEntryController instance;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private MockMvc mockMvc;
     private Date now;
-    private HealthMetricEntryPayload payload;
-    private HealthMetricEntry metricEntry;
+    private SelfMetricEntryPayload payload;
+    private SelfMetricEntry metricEntry;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        instance = new HealthMetricsEntryController(healthMetricsRepository, healthMetricsEntryRepository);
+        instance = new SelfMetricsEntryController(healthMetricsRepository, healthMetricsEntryRepository);
         //MockMvc must be initialized manually when you inject mock dependencies otherwise
         //annotate the test class with @AutoConfigureMockMvc and the mockMvc field class with @Autowired
         mockMvc = MockMvcBuilders
                 .standaloneSetup(instance)
                 .build();
         now = new Date();
-        payload = new HealthMetricEntryPayload(1L, "1", now);
+        payload = new SelfMetricEntryPayload(1L, "1", now);
         metricEntry = createHealthMetric(1L, "metricName", "1", now);
     }
 
     @Test
     public void postRequestShouldSaveAValidMetricAndReturn200() throws Exception {
         // Given
-        HealthMetric healthMetric = new HealthMetric();
+        SelfMetric healthMetric = new SelfMetric();
         healthMetric.setId(1L);
         healthMetric.setName("metricName");
 
         metricEntry.setId(null);
 
         when(healthMetricsRepository.findOne(anyLong())).thenReturn(healthMetric);
-        when(healthMetricsEntryRepository.save(any(HealthMetricEntry.class))).thenReturn(metricEntry);
+        when(healthMetricsEntryRepository.save(any(SelfMetricEntry.class))).thenReturn(metricEntry);
 
         // When
         mockMvc.perform(
@@ -99,7 +99,7 @@ public class HealthMetricsEntryControllerTest {
     public void putRequestShouldUpdateAnExistingMetricAndReturn200() throws Exception {
         // Given
         when(healthMetricsEntryRepository.findOne(anyLong())).thenReturn(metricEntry);
-        when(healthMetricsEntryRepository.save(any(HealthMetricEntry.class))).thenReturn(metricEntry);
+        when(healthMetricsEntryRepository.save(any(SelfMetricEntry.class))).thenReturn(metricEntry);
 
         // When
         mockMvc.perform(
@@ -116,7 +116,7 @@ public class HealthMetricsEntryControllerTest {
     @Test
     public void putRequestShouldReturn400WhenMetricIdDoesNotExist() throws Exception {
         // Given
-        when(healthMetricsEntryRepository.save(any(HealthMetricEntry.class))).thenReturn(metricEntry);
+        when(healthMetricsEntryRepository.save(any(SelfMetricEntry.class))).thenReturn(metricEntry);
         when(healthMetricsEntryRepository.findOne(metricEntry.getId())).thenReturn(null);
 
         // When
@@ -165,7 +165,7 @@ public class HealthMetricsEntryControllerTest {
     public void getMetricsByNameAndDateIntervalShouldReturnAListOfMetrics() throws Exception {
         // Given
         String metricName = "metricName";
-        List<HealthMetricEntry> metricsList = asList(
+        List<SelfMetricEntry> metricsList = asList(
                 createHealthMetric(1l, metricName, "1", new Date()),
                 createHealthMetric(2l, metricName, "1", new Date()),
                 createHealthMetric(3l, metricName, "1", new Date())
@@ -186,8 +186,8 @@ public class HealthMetricsEntryControllerTest {
         verify(healthMetricsEntryRepository).findByNameAndTimestampBetween(eq(metricName), eq(from), eq(to));
     }
 
-    private HealthMetricEntry createHealthMetric(Long id, String name, String value, Date timestamp) {
-        HealthMetricEntry metric = new HealthMetricEntry();
+    private SelfMetricEntry createHealthMetric(Long id, String name, String value, Date timestamp) {
+        SelfMetricEntry metric = new SelfMetricEntry();
         metric.setId(id);
         metric.setName(name);
         metric.setValue(value);

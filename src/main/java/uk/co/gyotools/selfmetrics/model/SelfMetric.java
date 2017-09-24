@@ -1,11 +1,11 @@
-package uk.co.gyotools.healthmetrics.model;
+package uk.co.gyotools.selfmetrics.model;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 @Table(name="HEALTH_METRIC")
-public class HealthMetric {
+public class SelfMetric {
     @Id
     @GeneratedValue
     private Long id;
@@ -41,7 +41,7 @@ public class HealthMetric {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HealthMetric that = (HealthMetric) o;
+        SelfMetric that = (SelfMetric) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(description, that.description);

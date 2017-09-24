@@ -1,0 +1,7 @@
+${AnsiBackground.BRIGHT_CYAN}
+${AnsiBackground.BRIGHT_CYAN}${AnsiColor.BRIGHT_WHITE}  __         _
+${AnsiBackground.BRIGHT_CYAN}${AnsiColor.BRIGHT_WHITE} (_   _  | _|_ |\/|  _ _|_ ._ o  _  _
+${AnsiBackground.BRIGHT_CYAN}${AnsiColor.BRIGHT_WHITE} __) (/_ |  |  |  | (/_ |_ |  | (_ _>  API
+${AnsiBackground.BRIGHT_CYAN}${AnsiColor.GREEN} _/\  __/\  _/\  /\/\  _/\  __/\  _/\
+${AnsiBackground.BRIGHT_CYAN}${AnsiColor.GREEN}    \/    \/   \/    \/   \/    \/
+${AnsiBackground.BRIGHT_CYAN}

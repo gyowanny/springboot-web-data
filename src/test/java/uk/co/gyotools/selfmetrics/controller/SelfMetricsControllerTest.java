@@ -1,8 +1,8 @@
-package uk.co.gyotools.healthmetrics.controller;
+package uk.co.gyotools.selfmetrics.controller;
 
-import uk.co.gyotools.healthmetrics.model.HealthMetric;
-import uk.co.gyotools.healthmetrics.model.payload.HealthMetricPayload;
-import uk.co.gyotools.healthmetrics.repository.HealthMetricsRepository;
+import uk.co.gyotools.selfmetrics.model.SelfMetric;
+import uk.co.gyotools.selfmetrics.model.payload.SelfMetricPayload;
+import uk.co.gyotools.selfmetrics.repository.SelfMetricsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,18 +31,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class HealthMetricsControllerTest {
+public class SelfMetricsControllerTest {
     private static final String URI_PATH = "/healthmetrics";
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Mock
-    private HealthMetricsRepository healthMetricsRepository;
+    private SelfMetricsRepository healthMetricsRepository;
     private MockMvc mockMvc;
-    private HealthMetricsController instance;
+    private SelfMetricsController instance;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        instance = new HealthMetricsController(healthMetricsRepository);
+        instance = new SelfMetricsController(healthMetricsRepository);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(instance)
                 .build();
@@ -51,9 +51,9 @@ public class HealthMetricsControllerTest {
     @Test
     public void postRequestShouldCreateANewHealthMetricFromAValidPayload() throws Exception {
         // Given
-        HealthMetricPayload payload = new HealthMetricPayload("metricName", "description");
-        HealthMetric metric = payload.toHealthMetric();
-        when(healthMetricsRepository.save(any(HealthMetric.class))).thenReturn(metric);
+        SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
+        SelfMetric metric = payload.toHealthMetric();
+        when(healthMetricsRepository.save(any(SelfMetric.class))).thenReturn(metric);
 
         // When
         mockMvc.perform(post(URI_PATH)
@@ -68,8 +68,8 @@ public class HealthMetricsControllerTest {
     @Test
     public void postRequestShouldReturn403WhenANameAlreadyInDBIsProvided() throws Exception {
         // Given
-        HealthMetricPayload payload = new HealthMetricPayload("metricName", "description");
-        HealthMetric metric = payload.toHealthMetric();
+        SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
+        SelfMetric metric = payload.toHealthMetric();
         when(healthMetricsRepository.existsByName(eq(metric.getName()))).thenReturn(true);
 
         // When
@@ -88,11 +88,11 @@ public class HealthMetricsControllerTest {
     public void putRequestShouldUpdateAnExistingHealthMetric() throws Exception {
         // Given
         final Long existingMetricId = 1L;
-        HealthMetricPayload payload = new HealthMetricPayload("metricName", "description");
-        HealthMetric metric = payload.toHealthMetric();
+        SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
+        SelfMetric metric = payload.toHealthMetric();
         metric.setId(existingMetricId);
         when(healthMetricsRepository.findOne(existingMetricId)).thenReturn(metric);
-        when(healthMetricsRepository.save(any(HealthMetric.class))).thenReturn(metric);
+        when(healthMetricsRepository.save(any(SelfMetric.class))).thenReturn(metric);
 
         // When
         mockMvc.perform(put(URI_PATH + "/{id}", existingMetricId)
@@ -109,7 +109,7 @@ public class HealthMetricsControllerTest {
     public void putRequestShouldReturn4xxErrorWhenHealthMetricDoesNotExist() throws Exception {
         // Given
         final Long existingMetricId = 1L;
-        HealthMetricPayload payload = new HealthMetricPayload("metricName", "description");
+        SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
         when(healthMetricsRepository.findOne(existingMetricId)).thenReturn(null);
 
         // When
@@ -120,14 +120,14 @@ public class HealthMetricsControllerTest {
 
         // Then
         verify(healthMetricsRepository).findOne(eq(existingMetricId));
-        verify(healthMetricsRepository, times(0)).save(any(HealthMetric.class));
+        verify(healthMetricsRepository, times(0)).save(any(SelfMetric.class));
     }
 
     @Test
     public void getRequestByIdShouldReturnAHealthMetric() throws Exception {
         // Given
         final Long existingMetricId = 1L;
-        HealthMetric metric = new HealthMetricPayload("metricName", "description").toHealthMetric();
+        SelfMetric metric = new SelfMetricPayload("metricName", "description").toHealthMetric();
         metric.setId(existingMetricId);
 
         when(healthMetricsRepository.findOne(eq(existingMetricId))).thenReturn(metric);
@@ -161,9 +161,9 @@ public class HealthMetricsControllerTest {
     @Test
     public void getRequestShouldReturnAllTheExistingHealthMetrics() throws Exception {
         // Given
-        HealthMetric metric = new HealthMetricPayload("metricName", "description").toHealthMetric();
+        SelfMetric metric = new SelfMetricPayload("metricName", "description").toHealthMetric();
         metric.setId(1L);
-        List<HealthMetric> metricList = asList(metric);
+        List<SelfMetric> metricList = asList(metric);
 
         when(healthMetricsRepository.findAll()).thenReturn(metricList);
 

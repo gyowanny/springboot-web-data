@@ -1,9 +1,8 @@
-package uk.co.gyotools.healthmetrics.controller;
+package uk.co.gyotools.selfmetrics.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;

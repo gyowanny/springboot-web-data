@@ -1,15 +1,15 @@
-package uk.co.gyotools.healthmetrics.model.payload;
+package uk.co.gyotools.selfmetrics.model.payload;
 
-import uk.co.gyotools.healthmetrics.model.HealthMetric;
+import uk.co.gyotools.selfmetrics.model.SelfMetric;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class HealthMetricPayload {
+public class SelfMetricPayload {
     private String name;
     private String description;
 
     @JsonCreator
-    public HealthMetricPayload(
+    public SelfMetricPayload(
             @JsonProperty("name") String name,
             @JsonProperty(value = "description", required = false) String description
     ) {
@@ -25,8 +25,8 @@ public class HealthMetricPayload {
         return description;
     }
 
-    public HealthMetric toHealthMetric() {
-        HealthMetric healthMetric = new HealthMetric();
+    public SelfMetric toHealthMetric() {
+        SelfMetric healthMetric = new SelfMetric();
         healthMetric.setName(name);
         healthMetric.setDescription(description);
         return healthMetric;

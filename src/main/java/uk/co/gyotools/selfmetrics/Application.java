@@ -1,4 +1,4 @@
-package uk.co.gyotools.healthmetrics;
+package uk.co.gyotools.selfmetrics;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -58,7 +58,7 @@ public class Application {
 
     private ApiInfo metaData() {
         ApiInfo apiInfo = new ApiInfo(
-                "HealthMetrics API",
+                "SelfMetrics API",
                 "Spring Boot REST API with Spring Data JPA",
                 "1.0",
                 "Terms of service",

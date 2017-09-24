@@ -1,18 +1,18 @@
-package uk.co.gyotools.healthmetrics.model.payload;
+package uk.co.gyotools.selfmetrics.model.payload;
 
-import uk.co.gyotools.healthmetrics.model.HealthMetricEntry;
+import uk.co.gyotools.selfmetrics.model.SelfMetricEntry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
-public class HealthMetricEntryPayload {
+public class SelfMetricEntryPayload {
     private Long metricId;
     private String value;
     private Date timestamp;
 
     @JsonCreator
-    public HealthMetricEntryPayload(
+    public SelfMetricEntryPayload(
             @JsonProperty("metricId") Long metricId,
             @JsonProperty("value") String value,
             @JsonProperty("timestamp") Date timestamp
@@ -34,8 +34,8 @@ public class HealthMetricEntryPayload {
         return timestamp;
     }
 
-    public HealthMetricEntry toHealthMetric(String name) {
-        HealthMetricEntry metric = new HealthMetricEntry();
+    public SelfMetricEntry toHealthMetric(String name) {
+        SelfMetricEntry metric = new SelfMetricEntry();
         metric.setName(name);
         metric.setValue(value);
         metric.setTimestamp(timestamp);

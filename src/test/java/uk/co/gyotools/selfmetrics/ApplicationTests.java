@@ -1,4 +1,4 @@
-package uk.co.gyotools.healthmetrics;
+package uk.co.gyotools.selfmetrics;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

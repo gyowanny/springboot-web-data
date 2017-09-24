@@ -1,10 +1,10 @@
-package uk.co.gyotools.healthmetrics.controller;
+package uk.co.gyotools.selfmetrics.controller;
 
-import uk.co.gyotools.healthmetrics.model.HealthMetric;
-import uk.co.gyotools.healthmetrics.model.HealthMetricEntry;
-import uk.co.gyotools.healthmetrics.model.payload.HealthMetricEntryPayload;
-import uk.co.gyotools.healthmetrics.repository.HealthMetricsEntryRepository;
-import uk.co.gyotools.healthmetrics.repository.HealthMetricsRepository;
+import uk.co.gyotools.selfmetrics.model.SelfMetric;
+import uk.co.gyotools.selfmetrics.model.SelfMetricEntry;
+import uk.co.gyotools.selfmetrics.model.payload.SelfMetricEntryPayload;
+import uk.co.gyotools.selfmetrics.repository.SelfMetricsEntryRepository;
+import uk.co.gyotools.selfmetrics.repository.SelfMetricsRepository;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,23 +25,23 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 @RestController
 @RequestMapping("/healthmetrics/entry")
 @Api(value="healthmetrics", description="Operations pertaining to health metrics")
-public class HealthMetricsEntryController {
-    private final HealthMetricsRepository healthMetricsRepository;
-    private final HealthMetricsEntryRepository healthMetricsEntryRepository;
+public class SelfMetricsEntryController {
+    private final SelfMetricsRepository healthMetricsRepository;
+    private final SelfMetricsEntryRepository healthMetricsEntryRepository;
 
     @Autowired
-    public HealthMetricsEntryController(
-            HealthMetricsRepository healthMetricsRepository,
-            HealthMetricsEntryRepository healthMetricsEntryRepository
+    public SelfMetricsEntryController(
+            SelfMetricsRepository healthMetricsRepository,
+            SelfMetricsEntryRepository healthMetricsEntryRepository
     ) {
         this.healthMetricsRepository = healthMetricsRepository;
         this.healthMetricsEntryRepository = healthMetricsEntryRepository;
     }
 
     @RequestMapping(method = POST)
-    @ApiOperation(value = "Create a health metric in the database")
-    public ResponseEntity<?> createMetric(@RequestBody HealthMetricEntryPayload payload) {
-        HealthMetric healthMetric = healthMetricsRepository.findOne(payload.getMetricId());
+    @ApiOperation(value = "Create a self metric in the database")
+    public ResponseEntity<?> createMetric(@RequestBody SelfMetricEntryPayload payload) {
+        SelfMetric healthMetric = healthMetricsRepository.findOne(payload.getMetricId());
         if (healthMetric == null) {
             return ResponseEntity.notFound().build();
         }
@@ -52,14 +52,14 @@ public class HealthMetricsEntryController {
     @RequestMapping(path="/{id}", method = PUT)
     public ResponseEntity<?> updateMetric(
             @PathVariable("id") Long id,
-            @RequestBody HealthMetricEntryPayload payload
+            @RequestBody SelfMetricEntryPayload payload
     ) {
-        HealthMetricEntry existingEntry = healthMetricsEntryRepository.findOne(id);
+        SelfMetricEntry existingEntry = healthMetricsEntryRepository.findOne(id);
         if (existingEntry == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        HealthMetricEntry metric = payload.toHealthMetric(existingEntry.getName());
+        SelfMetricEntry metric = payload.toHealthMetric(existingEntry.getName());
         metric.setId(id);
         healthMetricsEntryRepository.save(metric);
 
@@ -67,23 +67,23 @@ public class HealthMetricsEntryController {
     }
 
     @RequestMapping(path="/{id}", method = GET)
-    public ResponseEntity<HealthMetricEntry> getMetric(@PathVariable("id") Long id) {
-        HealthMetricEntry healthMetric = healthMetricsEntryRepository.findOne(id);
+    public ResponseEntity<SelfMetricEntry> getMetric(@PathVariable("id") Long id) {
+        SelfMetricEntry healthMetric = healthMetricsEntryRepository.findOne(id);
         if (healthMetric == null) {
             return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<HealthMetricEntry>(healthMetric, HttpStatus.OK);
+        return new ResponseEntity<SelfMetricEntry>(healthMetric, HttpStatus.OK);
     }
 
     @RequestMapping(path="/{name}/{from}/{to}", method = GET)
-    public ResponseEntity<List<HealthMetricEntry>> getMetrics(
+    public ResponseEntity<List<SelfMetricEntry>> getMetrics(
             @PathVariable("name") String name,
             @PathVariable("from") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime from,
             @PathVariable("to") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime to
     ) throws ParseException {
-        List<HealthMetricEntry> metricList = healthMetricsEntryRepository
+        List<SelfMetricEntry> metricList = healthMetricsEntryRepository
                 .findByNameAndTimestampBetween(name, from, to);
-        return new ResponseEntity<List<HealthMetricEntry>>(
+        return new ResponseEntity<List<SelfMetricEntry>>(
                 metricList,
                 HttpStatus.OK);
     }
