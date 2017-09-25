@@ -185,7 +185,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <echo message="-DapiUrl=${api.http.port} -DdatabaseName=${database.name} -DdatabaseHost=${database.host} -DdatabasePort=${database.port}"/>
+                                <echo message="-DapiUrl=http://localhost:${api.http.port} -DdatabaseName=${database.name} -DdatabaseHost=${database.host} -DdatabasePort=${database.port}"/>
                             </tasks>
                         </configuration>
                     </execution>
