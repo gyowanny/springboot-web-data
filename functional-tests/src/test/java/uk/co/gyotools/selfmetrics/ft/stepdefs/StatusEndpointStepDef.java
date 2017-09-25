@@ -3,8 +3,9 @@ package uk.co.gyotools.selfmetrics.ft.stepdefs;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import uk.co.gyotools.selfmetrics.ft.client.StatusClient;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StatusEndpointStepDef extends AbstractStepDef {
 
@@ -18,6 +19,7 @@ public class StatusEndpointStepDef extends AbstractStepDef {
 
     @Then("^response is successful and body is 'OK'$")
     public void responseIsSuccessfulAndBodyIsOK() throws Throwable {
-
+        assertThat(statusClient.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(statusClient.getLastResponse().getBody()).isEqualTo("OK");
     }
 }

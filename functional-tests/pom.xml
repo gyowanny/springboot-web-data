@@ -6,7 +6,6 @@
         <artifactId>self-metrics</artifactId>
         <groupId>uk.co.gyotools</groupId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,22 +15,20 @@
         <docker.start.timeout>60000</docker.start.timeout>
         <api.debug.suspend>n</api.debug.suspend>
         <cucumber-java.version>1.2.3</cucumber-java.version>
-        <database.name>hime</database.name>
-        <database.host>172.17.0.2</database.host>
-        <database.port>28015</database.port>
+        <database.name>HEALTHMETRICS</database.name>
+        <database.host>localhost</database.host>
+        <database.port>8080</database.port>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <version>4.3.11.RELEASE</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -43,45 +40,128 @@
             <groupId>info.cukes</groupId>
             <artifactId>cucumber-java</artifactId>
             <version>LATEST</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>info.cukes</groupId>
             <artifactId>cucumber-junit</artifactId>
             <version>LATEST</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>info.cukes</groupId>
             <artifactId>cucumber-spring</artifactId>
             <version>LATEST</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.19.0</version>
+                <configuration>
+                    <autoPull>on</autoPull>
+                    <images>
+                        <image>
+                            <name>self-metrics-api</name>
+                            <alias>api</alias>
+                            <run>
+                                <log>
+                                    <enabled>true</enabled>
+                                </log>
+                                <ports>
+                                    <port>api.http.port:8080</port>
+                                    <port>api.debug.port:5005</port>
+                                </ports>
+                                <volumes>
+                                    <bind>
+                                        <volume>api:/local_bin</volume>
+                                    </bind>
+                                </volumes>
+                                <namingStrategy>alias</namingStrategy>
+                                <env>
+                                    <JAVA_OPTS>
+                                        -Xmx512m
+                                        -Xdebug
+                                        -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=${api.debug.suspend}
+                                        -DapiUrl=http://localhost:${api.http.port}
+                                        -DdatabaseName=${database.name}
+                                        -DdatabaseHost=${database.host}
+                                        -DdatabasePort=${database.port}
+                                    </JAVA_OPTS>
+                                </env>
+                                <wait>
+                                    <http>
+                                        <url>http://localhost:${api.http.port}/private/status</url>
+                                        <method>GET</method>
+                                        <status>200</status>
+                                    </http>
+                                    <time>25000</time>
+                                </wait>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                            <goal>remove</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20.1</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <apiUrl>http://localhost:${api.http.port}</apiUrl>
+                        <databaseName>${database.name}</databaseName>
+                        <databaseHost>${database.host}</databaseHost>
+                        <databasePort>${database.port}</databasePort>
+                        <environment>#{project.activeProfiles[0].id}</environment>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.19.1</version>
                 <configuration>
-                    <!--<systemPropertyVariables>-->
-                        <!--<apiUrl>http://localhost:${api.http.port}</apiUrl>-->
-                        <!--<databaseName>${database.name}</databaseName>-->
-                        <!--<databaseHost>${database.host}</databaseHost>-->
-                        <!--<databasePort>${database.port}</databasePort>-->
-                    <!--</systemPropertyVariables>-->
+                    <systemPropertyVariables>
+                        <apiUrl>http://localhost:${api.http.port}</apiUrl>
+                        <databaseName>${database.name}</databaseName>
+                        <databaseHost>${database.host}</databaseHost>
+                        <databasePort>${database.port}</databasePort>
+                        <environment>#{project.activeProfiles[0].id}</environment>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
                             <goal>verify</goal>
                         </goals>
                     </execution>
@@ -105,13 +185,12 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <echo message="-DapiUrl=http://localhost:${api.http.port} -DdatabaseName=${database.name} -DdatabaseHost=${database.host} -DdatabasePort=${database.port}"/>
+                                <echo message="-DapiUrl=${api.http.port} -DdatabaseName=${database.name} -DdatabaseHost=${database.host} -DdatabasePort=${database.port}"/>
                             </tasks>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

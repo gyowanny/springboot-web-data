@@ -29,6 +29,25 @@
 		<springfox-swagger2.version>2.7.0</springfox-swagger2.version>
 	</properties>
 
+	<profiles>
+		<profile>
+			<id>all</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<modules>
+				<module>api</module>
+				<module>functional-tests</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>integration-test</id>
+			<modules>
+				<module>functional-tests</module>
+			</modules>
+		</profile>
+	</profiles>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
