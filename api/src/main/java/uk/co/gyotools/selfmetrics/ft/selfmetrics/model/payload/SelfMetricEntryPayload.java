@@ -22,6 +22,12 @@ public class SelfMetricEntryPayload {
         this.timestamp = timestamp;
     }
 
+    public SelfMetricEntryPayload(Long metricId, SelfMetricEntry metricEntry) {
+        this.metricId = metricId;
+        this.value = metricEntry.getValue();
+        this.timestamp = metricEntry.getTimestamp();
+    }
+
     public Long getMetricId() {
         return metricId;
     }

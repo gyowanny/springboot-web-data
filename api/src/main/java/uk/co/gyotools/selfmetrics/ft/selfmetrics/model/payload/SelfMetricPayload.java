@@ -17,6 +17,11 @@ public class SelfMetricPayload {
         this.description = description;
     }
 
+    public SelfMetricPayload(SelfMetric metric) {
+        this.name = metric.getName();
+        this.description = metric.getDescription();
+    }
+
     public String getName() {
         return name;
     }

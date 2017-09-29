@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        glue = {"cucumber.api.spring", "uk.co.gyotools.selfmetrics.ft.stepdefs"},
+        glue = {"cucumber.api.spring", "uk.co.gyotools.selfmetrics.ft"},
         features = "classpath:features",
         format = {"pretty", "html:target/cucumber-html-report", "json:target/cucumber-json-report.json"}
 )

@@ -14,8 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -23,7 +25,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @RestController
-@RequestMapping("/healthmetrics/entry")
+@RequestMapping("/selfmetrics/entry")
 @Api(value="healthmetrics", description="Operations pertaining to health metrics")
 public class SelfMetricsEntryController {
     private final SelfMetricsRepository healthMetricsRepository;
@@ -82,10 +84,14 @@ public class SelfMetricsEntryController {
             @PathVariable("to") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime to
     ) throws ParseException {
         List<SelfMetricEntry> metricList = healthMetricsEntryRepository
-                .findByNameAndTimestampBetween(name, from, to);
+                .findByNameAndTimestampBetween(name, toDate(from), toDate(to));
         return new ResponseEntity<List<SelfMetricEntry>>(
                 metricList,
                 HttpStatus.OK);
+    }
+
+    private static Date toDate(LocalDateTime dateTime) {
+        return Date.from(dateTime.toInstant(ZoneOffset.UTC));
     }
 
 }

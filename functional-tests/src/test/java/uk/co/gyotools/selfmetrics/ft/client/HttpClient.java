@@ -1,16 +1,17 @@
 package uk.co.gyotools.selfmetrics.ft.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-public abstract class ApiHttpClient {
-    @Value("${apiUrl}")
-    private String apiUrl;
-    @Autowired
-    private RestTemplate restTemplate;
+public abstract class HttpClient {
+    private final String apiUrl;
+    private final RestTemplate restTemplate;
     private ResponseEntity<?> lastResponse;
+
+    public HttpClient(String apiUrl, RestTemplate restTemplate) {
+        this.apiUrl = apiUrl;
+        this.restTemplate = restTemplate;
+    }
 
     public ResponseEntity<?> getLastResponse() {
         return lastResponse;

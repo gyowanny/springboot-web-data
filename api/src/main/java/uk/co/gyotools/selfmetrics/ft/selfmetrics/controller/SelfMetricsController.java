@@ -13,7 +13,7 @@ import java.util.List;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @RestController
-@RequestMapping(path = "/healthmetrics")
+@RequestMapping(path = "/selfmetrics")
 public class SelfMetricsController {
     private final SelfMetricsRepository healthMetricsRepository;
 

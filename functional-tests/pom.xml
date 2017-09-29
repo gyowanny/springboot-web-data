@@ -17,7 +17,9 @@
         <cucumber-java.version>1.2.3</cucumber-java.version>
         <database.name>HEALTHMETRICS</database.name>
         <database.host>localhost</database.host>
-        <database.port>8080</database.port>
+        <database.port>3306</database.port>
+        <database.user>admin</database.user>
+        <database.password>admin</database.password>
     </properties>
 
     <dependencies>
@@ -55,6 +57,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>4.3.11.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -62,10 +73,47 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.19.0</version>
+                <version>0.22.1</version>
                 <configuration>
                     <autoPull>on</autoPull>
                     <images>
+                        <image>
+                            <name>db</name>
+                            <alias>db</alias>
+                            <build>
+                                <from>mysql:5.7</from>
+
+                                <healthCheck>
+                                    <interval>15s</interval>
+                                    <timeout>5s</timeout>
+                                    <retries>5</retries>
+                                    <cmd>echo "show databases" |mysql -u'admin' -p'admin' selfmetrics</cmd>
+                                </healthCheck>
+                            </build>
+
+                            <run>
+                                <log></log>
+                                <env>
+                                    <MYSQL_ROOT_PASSWORD>password</MYSQL_ROOT_PASSWORD>
+                                    <MYSQL_DATABASE>selfmetrics</MYSQL_DATABASE>
+                                    <MYSQL_USER>admin</MYSQL_USER>
+                                    <MYSQL_PASSWORD>admin</MYSQL_PASSWORD>
+                                </env>
+
+                                <ports>
+                                    <port>${database.port}:3306</port>
+                                </ports>
+
+                                <volumes>
+                                    <bind>${project.basedir}/../schema:/docker-entrypoint-initdb.d
+                                    </bind>
+                                </volumes>
+                                <wait>
+                                    <time>120000</time>
+                                    <healthy>true</healthy>
+                                </wait>
+                            </run>
+                        </image>
                         <image>
                             <name>self-metrics-api</name>
                             <alias>api</alias>
@@ -92,6 +140,8 @@
                                         -DdatabaseName=${database.name}
                                         -DdatabaseHost=${database.host}
                                         -DdatabasePort=${database.port}
+                                        -DdatabaseUser=${database.user}
+                                        -DdatabasePassword=${database.password}
                                     </JAVA_OPTS>
                                 </env>
                                 <wait>
@@ -102,6 +152,9 @@
                                     </http>
                                     <time>25000</time>
                                 </wait>
+                                <links>
+                                    <link>db</link>
+                                </links>
                             </run>
                         </image>
                     </images>
@@ -114,14 +167,14 @@
                             <goal>start</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>stop</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                            <goal>remove</goal>
-                        </goals>
-                    </execution>
+                    <!--<execution>-->
+                        <!--<id>stop</id>-->
+                        <!--<phase>post-integration-test</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>stop</goal>-->
+                            <!--<goal>remove</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
                 </executions>
             </plugin>
             <plugin>
@@ -129,12 +182,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20.1</version>
                 <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
                     <systemPropertyVariables>
                         <apiUrl>http://localhost:${api.http.port}</apiUrl>
+                        <databaseDriverClassName>${database.driver}</databaseDriverClassName>
+                        <databaseUser>${database.user}</databaseUser>
+                        <databasePassword>${database.password}</databasePassword>
                         <databaseName>${database.name}</databaseName>
                         <databaseHost>${database.host}</databaseHost>
                         <databasePort>${database.port}</databasePort>
-                        <environment>#{project.activeProfiles[0].id}</environment>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -148,20 +204,12 @@
                         <databaseName>${database.name}</databaseName>
                         <databaseHost>${database.host}</databaseHost>
                         <databasePort>${database.port}</databasePort>
-                        <environment>#{project.activeProfiles[0].id}</environment>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>integration-tests</id>
-                        <phase>integration-test</phase>
-                        <goals>
                             <goal>verify</goal>
                         </goals>
                     </execution>

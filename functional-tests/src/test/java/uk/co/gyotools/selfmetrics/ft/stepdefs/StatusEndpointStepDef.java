@@ -1,25 +1,20 @@
 package uk.co.gyotools.selfmetrics.ft.stepdefs;
 
-import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import cucumber.runtime.java.StepDefAnnotation;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.co.gyotools.selfmetrics.ft.client.StatusClient;
+import uk.co.gyotools.selfmetrics.ft.client.ApiClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class StatusEndpointStepDef extends AbstractStepDef {
 
     @Autowired
-    private StatusClient statusClient;
+    private ApiClient apiClient;
 
     @When("^the status endpoint is called$")
     public void theStatusEndpointIsCalled() throws Throwable {
-        statusClient.status();
+        apiClient.status();
     }
 
-    @Then("^response is successful and body is 'OK'$")
-    public void responseIsSuccessfulAndBodyIsOK() throws Throwable {
-        assertThat(statusClient.getLastResponse().getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(statusClient.getLastResponse().getBody()).isEqualTo("OK");
-    }
 }

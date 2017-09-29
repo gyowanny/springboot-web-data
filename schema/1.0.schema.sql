@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS selfmetrics;
+USE selfmetrics;
+CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY 'admin';
+GRANT ALL PRIVILEGES ON selfmetrics.* TO 'admin'@'localhost';
+SET SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
