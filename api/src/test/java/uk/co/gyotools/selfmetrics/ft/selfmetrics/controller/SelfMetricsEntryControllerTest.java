@@ -60,11 +60,13 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
     @Transactional
     public void postRequestShouldSaveAValidMetricAndReturn200() throws Exception {
         // Given
-        when(selfMetricEntryDao.save(any())).thenReturn("1");
         SelfMetric metric = new SelfMetric();
         metric.setName("metricName");
+        metric.setId("1");
+        when(selfMetricEntryDao.save(any())).thenReturn("1");
+        when(selfMetricDao.findById(any())).thenReturn(metric);
 
-        payload = new SelfMetricEntryPayload(metric.getId(), "1", now);
+        payload = new SelfMetricEntryPayload("1", "1", now);
 
         // When
         mockMvc.perform(
@@ -112,7 +114,8 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
     @Transactional
     public void getRequestShouldReturnAnExistingHealthMetric() throws Exception {
         // Given
-        when(selfMetricEntryDao.findById(any())).thenReturn(createSelfMetricEntry("1", "entry", "1", new Date()));
+        metricEntry = createSelfMetricEntry("1", "entry", "1", new Date());
+        when(selfMetricEntryDao.findById(any())).thenReturn(metricEntry);
 
         // When
         mockMvc.perform(
