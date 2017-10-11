@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 public class SelfMetricEntryPayload {
-    private Long metricId;
+    private String metricId;
     private String value;
     private Date timestamp;
 
     @JsonCreator
     public SelfMetricEntryPayload(
-            @JsonProperty("metricId") Long metricId,
+            @JsonProperty("metricId") String metricId,
             @JsonProperty("value") String value,
             @JsonProperty("timestamp") Date timestamp
     ) {
@@ -22,13 +22,13 @@ public class SelfMetricEntryPayload {
         this.timestamp = timestamp;
     }
 
-    public SelfMetricEntryPayload(Long metricId, SelfMetricEntry metricEntry) {
+    public SelfMetricEntryPayload(String metricId, SelfMetricEntry metricEntry) {
         this.metricId = metricId;
         this.value = metricEntry.getValue();
         this.timestamp = metricEntry.getTimestamp();
     }
 
-    public Long getMetricId() {
+    public String getMetricId() {
         return metricId;
     }
 

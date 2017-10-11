@@ -2,15 +2,15 @@ package uk.co.gyotools.selfmetrics.ft.selfmetrics.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.AbstractUnitTest;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.SelfMetric;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.SelfMetricEntry;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.payload.SelfMetricEntryPayload;
-import uk.co.gyotools.selfmetrics.ft.selfmetrics.repository.SelfMetricsEntryRepository;
-import uk.co.gyotools.selfmetrics.ft.selfmetrics.repository.SelfMetricsRepository;
+import uk.co.gyotools.selfmetrics.ft.selfmetrics.dao.SelfMetricEntryDao;
+import uk.co.gyotools.selfmetrics.ft.selfmetrics.dao.SelfMetricDao;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -24,9 +24,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,10 +38,10 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
     private static final String URI_PATH = "/selfmetrics/entry";
     private static final String PAYLOAD = "{\"metricId\":\"1\",\"value\":\"1\",\"timestamp\":\"2017-11-01T18:25:43.511Z\"}";
 
-    @Autowired
-    private SelfMetricsEntryRepository selfMetricsEntryRepository;
-    @Autowired
-    private SelfMetricsRepository selfMetricsRepository;
+    @MockBean
+    private SelfMetricEntryDao selfMetricEntryDao;
+    @MockBean
+    private SelfMetricDao selfMetricDao;
     @Autowired
     private MockMvc mockMvc;
 
@@ -62,9 +60,9 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
     @Transactional
     public void postRequestShouldSaveAValidMetricAndReturn200() throws Exception {
         // Given
+        when(selfMetricEntryDao.save(any())).thenReturn("1");
         SelfMetric metric = new SelfMetric();
         metric.setName("metricName");
-        metric = selfMetricsRepository.save(metric);
 
         payload = new SelfMetricEntryPayload(metric.getId(), "1", now);
 
@@ -80,14 +78,12 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
     @Transactional
     public void putRequestShouldUpdateAnExistingMetricAndReturn200() throws Exception {
         // Given
-        SelfMetric metric = new SelfMetric();
-        metric.setName("metricName");
-        metric = selfMetricsRepository.save(metric);
+        SelfMetricEntry metricEntry = createSelfMetricEntry("1", "entry", "1", new Date());
+        when(selfMetricEntryDao.findById(any())).thenReturn(metricEntry);
 
-        SelfMetricEntry metricEntry = selfMetricsEntryRepository.save(createSelfMetricEntry(null, "entry", "1", new Date()));
         final String newName = "New Name";
         metricEntry.setName(newName);
-        payload = new SelfMetricEntryPayload(metric.getId(), metricEntry);
+        payload = new SelfMetricEntryPayload("1", metricEntry);
 
         // When
         mockMvc.perform(
@@ -97,8 +93,8 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
                 .andExpect(status().is2xxSuccessful());
 
         // Then
-        SelfMetricEntry actualEntry = selfMetricsEntryRepository.findOne(metricEntry.getId());
-        assertThat(actualEntry.getName()).isEqualTo(newName);
+        verify(selfMetricEntryDao).findById(any());
+        verify(selfMetricEntryDao).save(any());
     }
 
     @Test
@@ -116,8 +112,7 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
     @Transactional
     public void getRequestShouldReturnAnExistingHealthMetric() throws Exception {
         // Given
-        SelfMetricEntry metricEntry =
-                selfMetricsEntryRepository.save(createSelfMetricEntry(null, "entry", "1", new Date()));
+        when(selfMetricEntryDao.findById(any())).thenReturn(createSelfMetricEntry("1", "entry", "1", new Date()));
 
         // When
         mockMvc.perform(
@@ -125,7 +120,6 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(metricEntry)));
-
     }
 
     @Test
@@ -145,10 +139,11 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
         // Given
         String metricName = "metricName";
         List<SelfMetricEntry> metricsList = asList(
-                selfMetricsEntryRepository.save(createSelfMetricEntry(null, metricName, "1", new Date())),
-                selfMetricsEntryRepository.save(createSelfMetricEntry(null, metricName, "1", new Date())),
-                selfMetricsEntryRepository.save(createSelfMetricEntry(null, metricName, "1", new Date()))
+                createSelfMetricEntry("1", metricName, "1", new Date()),
+                createSelfMetricEntry("2", metricName, "1", new Date()),
+                createSelfMetricEntry("3", metricName, "1", new Date())
         );
+        when(selfMetricEntryDao.findByNameAndTimestampBetween(any(), any(), any())).thenReturn(metricsList);
         final LocalDateTime from = LocalDateTime.of(2017, Month.APRIL, 1, 1, 0, 0, 0);
         final LocalDateTime to = LocalDateTime.of(2018, Month.APRIL, 1, 3, 0, 0, 0);
 
@@ -157,13 +152,15 @@ public class SelfMetricsEntryControllerTest extends AbstractUnitTest {
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(metricsList)));
 
+        //Then
+        verify(selfMetricEntryDao).findByNameAndTimestampBetween(any(), any(), any());
     }
 
     private String toISOFormat(LocalDateTime from) {
         return DateTimeFormatter.ISO_DATE_TIME.format(from);
     }
 
-    private SelfMetricEntry createSelfMetricEntry(Long id, String name, String value, Date timestamp) {
+    private SelfMetricEntry createSelfMetricEntry(String id, String name, String value, Date timestamp) {
         SelfMetricEntry metricEntry = new SelfMetricEntry();
         metricEntry.setId(id);
         metricEntry.setName(name);

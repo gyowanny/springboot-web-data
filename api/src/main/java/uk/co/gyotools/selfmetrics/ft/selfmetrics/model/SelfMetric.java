@@ -3,21 +3,16 @@ package uk.co.gyotools.selfmetrics.ft.selfmetrics.model;
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity
-@Table(name="HEALTH_METRIC")
 public class SelfMetric {
-    @Id
-    @GeneratedValue
-    private Long id;
-    @Column(unique = true)
+    private String id;
     private String name;
     private String description;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -2,7 +2,7 @@ package uk.co.gyotools.selfmetrics.ft.selfmetrics.controller;
 
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.SelfMetric;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.payload.SelfMetricPayload;
-import uk.co.gyotools.selfmetrics.ft.selfmetrics.repository.SelfMetricsRepository;
+import uk.co.gyotools.selfmetrics.ft.selfmetrics.dao.SelfMetricDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +15,10 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @RestController
 @RequestMapping(path = "/selfmetrics")
 public class SelfMetricsController {
-    private final SelfMetricsRepository healthMetricsRepository;
+    private final SelfMetricDao healthMetricsRepository;
 
     @Autowired
-    public SelfMetricsController(SelfMetricsRepository healthMetricsRepository) {
+    public SelfMetricsController(SelfMetricDao healthMetricsRepository) {
         this.healthMetricsRepository = healthMetricsRepository;
     }
 
@@ -36,8 +36,8 @@ public class SelfMetricsController {
     }
 
     @RequestMapping(path="/{id}", method = PUT, consumes = "application/json")
-    public ResponseEntity<?> updateHealthMetric(@PathVariable("id") Long id, @RequestBody SelfMetricPayload payload) {
-        SelfMetric metric = healthMetricsRepository.findOne(id);
+    public ResponseEntity<?> updateHealthMetric(@PathVariable("id") String id, @RequestBody SelfMetricPayload payload) {
+        SelfMetric metric = healthMetricsRepository.findById(id);
         if (metric == null) {
             return ResponseEntity.notFound().build();
         }
@@ -51,8 +51,8 @@ public class SelfMetricsController {
     }
 
     @RequestMapping(path="/{id}", method = GET, produces = "application/json")
-    public ResponseEntity<SelfMetric> getHealthMetric(@PathVariable("id") Long id) {
-        SelfMetric metric = healthMetricsRepository.findOne(id);
+    public ResponseEntity<SelfMetric> getHealthMetric(@PathVariable("id") String id) {
+        SelfMetric metric = healthMetricsRepository.findById(id);
         if (metric == null) {
             return ResponseEntity.notFound().build();
         }

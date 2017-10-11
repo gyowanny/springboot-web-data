@@ -1,31 +1,25 @@
 package uk.co.gyotools.selfmetrics.ft.selfmetrics.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.AbstractUnitTest;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.SelfMetric;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.payload.SelfMetricPayload;
-import uk.co.gyotools.selfmetrics.ft.selfmetrics.repository.SelfMetricsRepository;
+import uk.co.gyotools.selfmetrics.ft.selfmetrics.dao.SelfMetricDao;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -36,8 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class SelfMetricsControllerTest extends AbstractUnitTest {
     private static final String URI_PATH = "/selfmetrics";
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Autowired
-    private SelfMetricsRepository selfMetricsRepository;
+    @MockBean
+    private SelfMetricDao selfMetricDao;
     @Autowired
     private MockMvc mockMvc;
 
@@ -45,6 +39,7 @@ public class SelfMetricsControllerTest extends AbstractUnitTest {
     @Transactional
     public void postRequestShouldCreateANewHealthMetricFromAValidPayload() throws Exception {
         // Given
+        when(selfMetricDao.save(any())).thenReturn("1");
         SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
         SelfMetric metric = payload.toHealthMetric();
 
@@ -61,9 +56,7 @@ public class SelfMetricsControllerTest extends AbstractUnitTest {
     public void postRequestShouldReturn403WhenANameAlreadyInDBIsProvided() throws Exception {
         // Given
         SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
-        SelfMetric metric = payload.toHealthMetric();
-
-        selfMetricsRepository.save(metric);
+        when(selfMetricDao.existsByName(any())).thenReturn(true);
 
         // When
         mockMvc.perform(post(URI_PATH)
@@ -71,6 +64,9 @@ public class SelfMetricsControllerTest extends AbstractUnitTest {
                 .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("Metric name already exists"));
+
+        // Then
+        verify(selfMetricDao).existsByName(any());
     }
 
     @Test
@@ -79,32 +75,27 @@ public class SelfMetricsControllerTest extends AbstractUnitTest {
         // Given
         SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
         SelfMetric metric = payload.toHealthMetric();
-
-        metric = selfMetricsRepository.save(metric);
-        final Long existingMetricId = metric.getId();
-
-        final String newName = "New name";
-        metric.setName(newName);
-
+        metric.setId("1");
         payload = new SelfMetricPayload(metric);
+        when(selfMetricDao.findById(any())).thenReturn(metric);
+        when(selfMetricDao.save(any())).thenReturn("1");
 
         // When
-        mockMvc.perform(put(URI_PATH + "/{id}", existingMetricId)
+        mockMvc.perform(put(URI_PATH + "/{id}", metric.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().is2xxSuccessful());
 
         // Then
-        SelfMetric actualSelfMetric = selfMetricsRepository.findOne(existingMetricId);
-        assertNotNull(actualSelfMetric);
-        assertThat(actualSelfMetric.getName()).isEqualTo(newName);
+        verify(selfMetricDao).findById(any());
+        verify(selfMetricDao).save(any());
     }
 
     @Test
     @Transactional
     public void putRequestShouldReturn4xxErrorWhenHealthMetricDoesNotExist() throws Exception {
         // Given
-        final Long existingMetricId = 1L;
+        final String existingMetricId = "1";
         SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
 
         // When
@@ -121,24 +112,28 @@ public class SelfMetricsControllerTest extends AbstractUnitTest {
         // Given
         SelfMetricPayload payload = new SelfMetricPayload("metricName", "description");
         SelfMetric metric = payload.toHealthMetric();
-
-        metric = selfMetricsRepository.save(metric);
+        when(selfMetricDao.findById(any())).thenReturn(metric);
 
         // When
-        mockMvc.perform(get(URI_PATH + "/{id}", metric.getId())
+        mockMvc.perform(get(URI_PATH + "/{id}", "1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(metric)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
+
+        // Then
+        verify(selfMetricDao).findById(eq("1"));
     }
 
     @Test
     @Transactional
     public void getRequestByIdShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
         // When
-        mockMvc.perform(get(URI_PATH + "/{id}", 1L))
+        mockMvc.perform(get(URI_PATH + "/{id}", "1"))
                 .andExpect(status().is4xxClientError());
 
+        // Then
+        verify(selfMetricDao).findById(eq("1"));
     }
 
     @Test
@@ -146,7 +141,7 @@ public class SelfMetricsControllerTest extends AbstractUnitTest {
     public void getRequestShouldReturnAllTheExistingHealthMetrics() throws Exception {
         // Given
         SelfMetric metric = new SelfMetricPayload("metricName", "description").toHealthMetric();
-        metric = selfMetricsRepository.save(metric);
+        when(selfMetricDao.findAll()).thenReturn(asList(metric));
 
         // When
         mockMvc.perform(get(URI_PATH))

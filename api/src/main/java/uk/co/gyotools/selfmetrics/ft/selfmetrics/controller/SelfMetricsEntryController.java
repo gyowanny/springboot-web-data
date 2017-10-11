@@ -3,8 +3,8 @@ package uk.co.gyotools.selfmetrics.ft.selfmetrics.controller;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.SelfMetric;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.SelfMetricEntry;
 import uk.co.gyotools.selfmetrics.ft.selfmetrics.model.payload.SelfMetricEntryPayload;
-import uk.co.gyotools.selfmetrics.ft.selfmetrics.repository.SelfMetricsEntryRepository;
-import uk.co.gyotools.selfmetrics.ft.selfmetrics.repository.SelfMetricsRepository;
+import uk.co.gyotools.selfmetrics.ft.selfmetrics.dao.SelfMetricEntryDao;
+import uk.co.gyotools.selfmetrics.ft.selfmetrics.dao.SelfMetricDao;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,49 +28,49 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 @RequestMapping("/selfmetrics/entry")
 @Api(value="healthmetrics", description="Operations pertaining to health metrics")
 public class SelfMetricsEntryController {
-    private final SelfMetricsRepository healthMetricsRepository;
-    private final SelfMetricsEntryRepository healthMetricsEntryRepository;
+    private final SelfMetricDao selfMetricDao;
+    private final SelfMetricEntryDao selfMetricEntryDao;
 
     @Autowired
     public SelfMetricsEntryController(
-            SelfMetricsRepository healthMetricsRepository,
-            SelfMetricsEntryRepository healthMetricsEntryRepository
+            SelfMetricDao selfMetricDao,
+            SelfMetricEntryDao selfMetricEntryDao
     ) {
-        this.healthMetricsRepository = healthMetricsRepository;
-        this.healthMetricsEntryRepository = healthMetricsEntryRepository;
+        this.selfMetricDao = selfMetricDao;
+        this.selfMetricEntryDao = selfMetricEntryDao;
     }
 
     @RequestMapping(method = POST)
     @ApiOperation(value = "Create a self metric in the database")
     public ResponseEntity<?> createMetric(@RequestBody SelfMetricEntryPayload payload) {
-        SelfMetric healthMetric = healthMetricsRepository.findOne(payload.getMetricId());
+        SelfMetric healthMetric = selfMetricDao.findById(payload.getMetricId());
         if (healthMetric == null) {
             return ResponseEntity.notFound().build();
         }
-        healthMetricsEntryRepository.save(payload.toHealthMetric(healthMetric.getName()));
+        selfMetricEntryDao.save(payload.toHealthMetric(healthMetric.getName()));
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(path="/{id}", method = PUT)
     public ResponseEntity<?> updateMetric(
-            @PathVariable("id") Long id,
+            @PathVariable("id") String id,
             @RequestBody SelfMetricEntryPayload payload
     ) {
-        SelfMetricEntry existingEntry = healthMetricsEntryRepository.findOne(id);
+        SelfMetricEntry existingEntry = selfMetricEntryDao.findById(id);
         if (existingEntry == null) {
             return ResponseEntity.badRequest().build();
         }
 
         SelfMetricEntry metric = payload.toHealthMetric(existingEntry.getName());
         metric.setId(id);
-        healthMetricsEntryRepository.save(metric);
+        selfMetricEntryDao.save(metric);
 
         return ResponseEntity.ok().build();
     }
 
     @RequestMapping(path="/{id}", method = GET)
-    public ResponseEntity<SelfMetricEntry> getMetric(@PathVariable("id") Long id) {
-        SelfMetricEntry healthMetric = healthMetricsEntryRepository.findOne(id);
+    public ResponseEntity<SelfMetricEntry> getMetric(@PathVariable("id") String id) {
+        SelfMetricEntry healthMetric = selfMetricEntryDao.findById(id);
         if (healthMetric == null) {
             return ResponseEntity.notFound().build();
         }
@@ -83,7 +83,7 @@ public class SelfMetricsEntryController {
             @PathVariable("from") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime from,
             @PathVariable("to") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime to
     ) throws ParseException {
-        List<SelfMetricEntry> metricList = healthMetricsEntryRepository
+        List<SelfMetricEntry> metricList = selfMetricEntryDao
                 .findByNameAndTimestampBetween(name, toDate(from), toDate(to));
         return new ResponseEntity<List<SelfMetricEntry>>(
                 metricList,
