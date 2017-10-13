@@ -16,8 +16,8 @@
         <api.debug.suspend>n</api.debug.suspend>
         <cucumber-java.version>1.2.3</cucumber-java.version>
         <database.name>HEALTHMETRICS</database.name>
-        <database.host>localhost</database.host>
-        <database.port>3306</database.port>
+        <database.host>172.17.0.2</database.host>
+        <database.port>28015</database.port>
         <database.user>admin</database.user>
         <database.password>admin</database.password>
     </properties>
@@ -78,40 +78,21 @@
                     <autoPull>on</autoPull>
                     <images>
                         <image>
-                            <name>db</name>
+                            <name>rethinkdb:latest</name>
                             <alias>db</alias>
-                            <build>
-                                <from>mysql:5.7</from>
-
-                                <healthCheck>
-                                    <interval>15s</interval>
-                                    <timeout>5s</timeout>
-                                    <retries>5</retries>
-                                    <cmd>echo "show databases" |mysql -u'admin' -p'admin' selfmetrics</cmd>
-                                </healthCheck>
-                            </build>
-
                             <run>
-                                <log></log>
-                                <env>
-                                    <MYSQL_ROOT_PASSWORD>password</MYSQL_ROOT_PASSWORD>
-                                    <MYSQL_DATABASE>selfmetrics</MYSQL_DATABASE>
-                                    <MYSQL_USER>admin</MYSQL_USER>
-                                    <MYSQL_PASSWORD>admin</MYSQL_PASSWORD>
-                                </env>
-
-                                <ports>
-                                    <port>${database.port}:3306</port>
-                                </ports>
-
-                                <volumes>
-                                    <bind>${project.basedir}/../schema:/docker-entrypoint-initdb.d
-                                    </bind>
-                                </volumes>
+                                <namingStrategy>alias</namingStrategy>
+                                <log>
+                                    <enabled>true</enabled>
+                                </log>
                                 <wait>
-                                    <time>120000</time>
-                                    <healthy>true</healthy>
+                                    <log>Server ready</log>
+                                    <time>${docker.start.timeout}</time>
                                 </wait>
+                                <ports>
+                                    <port>${database.port}:${database.port}</port>
+                                    <port>9090:8080</port>
+                                </ports>
                             </run>
                         </image>
                         <image>
@@ -162,37 +143,20 @@
                 <executions>
                     <execution>
                         <id>start</id>
-                        <phase>process-test-classes</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>start</goal>
                         </goals>
                     </execution>
-                    <!--<execution>-->
-                        <!--<id>stop</id>-->
-                        <!--<phase>post-integration-test</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>stop</goal>-->
-                            <!--<goal>remove</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                            <goal>remove</goal>
+                        </goals>
+                    </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
-                <configuration>
-                    <testFailureIgnore>true</testFailureIgnore>
-                    <systemPropertyVariables>
-                        <apiUrl>http://localhost:${api.http.port}</apiUrl>
-                        <databaseDriverClassName>${database.driver}</databaseDriverClassName>
-                        <databaseUser>${database.user}</databaseUser>
-                        <databasePassword>${database.password}</databasePassword>
-                        <databaseName>${database.name}</databaseName>
-                        <databaseHost>${database.host}</databaseHost>
-                        <databasePort>${database.port}</databasePort>
-                    </systemPropertyVariables>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

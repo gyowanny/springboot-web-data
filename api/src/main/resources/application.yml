@@ -1,6 +1,6 @@
 logging:
   level:
-    .: error
+    .: debug
     org.springframework: ERROR
     org.hibernate: ERROR
 
